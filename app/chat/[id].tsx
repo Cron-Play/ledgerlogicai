@@ -490,8 +490,9 @@ export default function ChatScreen() {
     setLoading(true);
     try {
       const data = await getMessages(id);
-      setMessages(data);
-      console.log('[Chat] Loaded', data.length, 'messages');
+      const safeData = Array.isArray(data) ? data : [];
+      setMessages(safeData);
+      console.log('[Chat] Loaded', safeData.length, 'messages');
     } catch (err) {
       console.error('[Chat] Failed to load messages:', err);
       setError('Couldn\'t load messages');
@@ -539,7 +540,7 @@ export default function ChatScreen() {
       createdAt: new Date().toISOString(),
     };
 
-    setMessages((prev) => [...(prev ?? []), optimisticMsg]);
+    setMessages((prev) => [...(Array.isArray(prev) ? prev : []), optimisticMsg]);
     setInputText('');
     setSending(true);
     scrollToBottom();
@@ -549,16 +550,16 @@ export default function ChatScreen() {
       console.log('[Chat] Message sent, response received');
       // Replace optimistic + add assistant response
       setMessages((prev) => {
-        const withoutOptimistic = (prev ?? []).filter((m) => m.id !== optimisticMsg.id);
+        const withoutOptimistic = (Array.isArray(prev) ? prev : []).filter((m) => m.id !== optimisticMsg.id);
         return [...withoutOptimistic, response];
       });
       // Reload to get both user + assistant messages
       const updated = await getMessages(id);
-      setMessages(updated);
+      setMessages(Array.isArray(updated) ? updated : []);
       scrollToBottom();
     } catch (err) {
       console.error('[Chat] Failed to send message:', err);
-      setMessages((prev) => (prev ?? []).filter((m) => m.id !== optimisticMsg.id));
+      setMessages((prev) => (Array.isArray(prev) ? prev : []).filter((m) => m.id !== optimisticMsg.id));
     } finally {
       setSending(false);
     }

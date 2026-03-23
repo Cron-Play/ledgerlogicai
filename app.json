@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Natively App",
-    "slug": "natively-app",
+    "name": "build-an-ai-chatbot-",
+    "slug": "build-an-ai-chatbot",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/app-icon-dua.png",
@@ -35,7 +35,7 @@
       "expo-web-browser",
       "expo-secure-store"
     ],
-    "scheme": "nativelyapp",
+    "scheme": "buildanaichatbot",
     "experiments": {
       "typedRoutes": true
     },
