@@ -147,7 +147,8 @@ function SkeletonMessage({ isUser }: { isUser: boolean }) {
   );
 }
 
-function parseMarkdown(text: string): React.ReactNode[] {
+function parseMarkdown(text: string | undefined | null): React.ReactNode[] {
+  if (!text) return [];
   const lines = text.split('\n');
   const nodes: React.ReactNode[] = [];
   let key = 0;
@@ -411,7 +412,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
     );
   }
 
-  const contentNodes = parseMarkdown(message.content);
+  const contentNodes = parseMarkdown(message.content ?? '');
 
   return (
     <View style={{ alignSelf: 'flex-start', marginBottom: 16, maxWidth: '92%' }}>
