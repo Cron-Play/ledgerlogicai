@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "build-an-ai-chatbot-",
-    "slug": "build-an-ai-chatbot",
+    "name": "LedgerLogicAI",
+    "slug": "ledgerlogicai",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/ChatGPT Image Feb 19, 2026, 01_44_55 PM.png",
@@ -35,7 +35,7 @@
       "expo-web-browser",
       "expo-secure-store"
     ],
-    "scheme": "buildanaichatbot",
+    "scheme": "ledgerlogicai",
     "experiments": {
       "typedRoutes": true
     },

@@ -23,7 +23,7 @@ export const unstable_settings = {
   initialRouteName: "(tabs)",
 };
 
-const FinLexDarkTheme = {
+const LedgerLogicAIDarkTheme = {
   dark: true,
   colors: {
     primary: COLORS.primary,
@@ -66,7 +66,7 @@ export default function RootLayout() {
   return (
     <>
       <StatusBar style="light" animated />
-      <ThemeProvider value={FinLexDarkTheme}>
+      <ThemeProvider value={LedgerLogicAIDarkTheme}>
         <SafeAreaProvider>
           <WidgetProvider>
             <GestureHandlerRootView style={{ flex: 1 }}>

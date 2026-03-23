@@ -70,7 +70,7 @@ function TypingIndicator() {
             textTransform: 'uppercase',
           }}
         >
-          FinLex
+          LedgerLogicAI
         </Text>
       </View>
       <View
@@ -442,7 +442,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
             textTransform: 'uppercase',
           }}
         >
-          FinLex
+          LedgerLogicAI
         </Text>
       </View>
       <View
@@ -602,7 +602,7 @@ export default function ChatScreen() {
 
   const sessionTitle = messages.length > 0
     ? (messages[0]?.content?.slice(0, 40) ?? 'Chat')
-    : 'FinLex AI';
+    : 'LedgerLogicAI';
 
   return (
     <>
@@ -697,7 +697,7 @@ export default function ChatScreen() {
                   </Text>
                 </View>
                 <Text style={{ fontFamily: 'SpaceGrotesk-SemiBold', fontSize: 16, color: COLORS.text, marginBottom: 8 }}>
-                  Ask FinLex AI anything
+                  Ask LedgerLogicAI anything
                 </Text>
                 <Text style={{ fontFamily: 'SpaceGrotesk-Regular', fontSize: 13, color: COLORS.textSecondary, textAlign: 'center', maxWidth: 260 }}>
                   Expert guidance on SA accounting, tax law, IFRS, and audit standards

@@ -1,4 +1,4 @@
-# build-an-ai-chatbot-
+# LedgerLogicAI
 
 This app was built using [Newly.dev](https://newly.dev) - a platform for creating mobile apps.
 

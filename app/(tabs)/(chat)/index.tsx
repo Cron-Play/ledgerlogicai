@@ -215,7 +215,7 @@ export default function NewChatScreen() {
               marginBottom: 6,
             }}
           >
-            FinLex AI
+            LedgerLogicAI
           </Text>
           <Text
             style={{
