@@ -370,6 +370,7 @@ function renderInlineMarkdown(text: string, baseKey: number): React.ReactNode {
 function MessageBubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === 'user';
   const timeDisplay = formatTime(message.createdAt);
+  const hasFailed = message.error === true;
 
   if (isUser) {
     return (
@@ -382,7 +383,8 @@ function MessageBubble({ message }: { message: ChatMessage }) {
             paddingHorizontal: 16,
             paddingVertical: 12,
             borderWidth: 1,
-            borderColor: 'rgba(28, 42, 58, 0.8)',
+            borderColor: hasFailed ? '#e53e3e' : 'rgba(28, 42, 58, 0.8)',
+            opacity: hasFailed ? 0.7 : 1,
           }}
         >
           <Text
@@ -397,17 +399,22 @@ function MessageBubble({ message }: { message: ChatMessage }) {
             {message.content}
           </Text>
         </View>
-        <Text
-          style={{
-            fontFamily: 'SpaceGrotesk-Regular',
-            fontSize: 11,
-            color: COLORS.textTertiary,
-            marginTop: 4,
-            alignSelf: 'flex-end',
-          }}
-        >
-          {timeDisplay}
-        </Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', marginTop: 4, gap: 4 }}>
+          {hasFailed && (
+            <Text style={{ fontFamily: 'SpaceGrotesk-Regular', fontSize: 11, color: '#e53e3e' }}>
+              Failed to send
+            </Text>
+          )}
+          <Text
+            style={{
+              fontFamily: 'SpaceGrotesk-Regular',
+              fontSize: 11,
+              color: hasFailed ? '#e53e3e' : COLORS.textTertiary,
+            }}
+          >
+            {timeDisplay}
+          </Text>
+        </View>
       </View>
     );
   }
@@ -548,19 +555,23 @@ export default function ChatScreen() {
 
     try {
       const response = await sendMessage(id, trimmed);
-      console.log('[Chat] Message sent, response received');
-      // Replace optimistic + add assistant response
+      console.log('[Chat] Message sent successfully, user_message id:', response.user_message.id);
+      // Replace optimistic user message with confirmed one, then append assistant reply
       setMessages((prev) => {
-        const withoutOptimistic = (Array.isArray(prev) ? prev : []).filter((m) => m.id !== optimisticMsg.id);
-        return [...withoutOptimistic, response];
+        const withoutOptimistic = (Array.isArray(prev) ? prev : []).filter(
+          (m) => m.id !== optimisticMsg.id
+        );
+        return [...withoutOptimistic, response.user_message, response.assistant_message];
       });
-      // Reload to get both user + assistant messages
-      const updated = await getMessages(id);
-      setMessages(Array.isArray(updated) ? updated : []);
       scrollToBottom();
     } catch (err) {
       console.error('[Chat] Failed to send message:', err);
-      setMessages((prev) => (Array.isArray(prev) ? prev : []).filter((m) => m.id !== optimisticMsg.id));
+      // Keep the optimistic message visible but mark it as failed so user can see it
+      setMessages((prev) =>
+        (Array.isArray(prev) ? prev : []).map((m) =>
+          m.id === optimisticMsg.id ? { ...m, error: true } : m
+        )
+      );
     } finally {
       setSending(false);
     }
