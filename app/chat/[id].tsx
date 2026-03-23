@@ -539,7 +539,7 @@ export default function ChatScreen() {
       createdAt: new Date().toISOString(),
     };
 
-    setMessages((prev) => [...prev, optimisticMsg]);
+    setMessages((prev) => [...(prev ?? []), optimisticMsg]);
     setInputText('');
     setSending(true);
     scrollToBottom();
@@ -549,7 +549,7 @@ export default function ChatScreen() {
       console.log('[Chat] Message sent, response received');
       // Replace optimistic + add assistant response
       setMessages((prev) => {
-        const withoutOptimistic = prev.filter((m) => m.id !== optimisticMsg.id);
+        const withoutOptimistic = (prev ?? []).filter((m) => m.id !== optimisticMsg.id);
         return [...withoutOptimistic, response];
       });
       // Reload to get both user + assistant messages
@@ -558,7 +558,7 @@ export default function ChatScreen() {
       scrollToBottom();
     } catch (err) {
       console.error('[Chat] Failed to send message:', err);
-      setMessages((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
+      setMessages((prev) => (prev ?? []).filter((m) => m.id !== optimisticMsg.id));
     } finally {
       setSending(false);
     }
