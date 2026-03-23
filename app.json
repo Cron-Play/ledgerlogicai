@@ -4,10 +4,10 @@
     "slug": "build-an-ai-chatbot",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/app-icon-dua.png",
+    "icon": "./assets/images/ChatGPT Image Feb 19, 2026, 01_44_55 PM.png",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/app-icon-dua.png",
+      "image": "./assets/images/ChatGPT Image Feb 19, 2026, 01_44_55 PM.png",
       "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
@@ -20,7 +20,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/app-icon-dua.png",
+        "foregroundImage": "./assets/images/ChatGPT Image Feb 19, 2026, 01_44_55 PM.png",
         "backgroundColor": "#000000"
       },
       "package": "com.placeholder.app"
