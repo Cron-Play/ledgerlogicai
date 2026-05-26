@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { eq, desc, and } from 'drizzle-orm';
+import { eq, desc, and, sql } from 'drizzle-orm';
 import { generateText } from 'ai';
 import { gateway } from '@specific-dev/framework';
 import * as schema from '../db/schema/schema.js';
@@ -60,6 +60,8 @@ Your knowledge base covers:
 
 You are a trusted technical advisor. Be thorough, accurate, and professional. If a question is outside your knowledge or involves a very recent amendment, say so clearly and recommend consulting the relevant professional body or SARS directly.`;
 
+const TITLE_GENERATION_PROMPT = `You name accounting/tax/audit chat threads. Given the user's question, return a 2–4 word Title Case topic label naming the specific subject (e.g. 'Deferred Tax', 'VAT Apportionment', 'IFRS 16 Leases', 'Going Concern Audit'). No quotes, no punctuation, no trailing period. Just the label.`;
+
 interface CreateSessionBody {
   title?: string;
 }
@@ -84,6 +86,38 @@ function truncateToWordBoundary(text: string, maxLength: number): string {
   }
 
   return truncated.trim();
+}
+
+async function generateTitleFromMessage(app: App, userMessage: string): Promise<string> {
+  try {
+    // Use Promise.race with a timeout to prevent hanging
+    const titlePromise = (async () => {
+      const result = await generateText({
+        model: gateway('openai/gpt-4o-mini'),
+        system: TITLE_GENERATION_PROMPT,
+        prompt: userMessage,
+      });
+      return result.text;
+    })();
+
+    const timeoutPromise = new Promise<string>((_, reject) =>
+      setTimeout(() => reject(new Error('Title generation timeout')), 5000)
+    );
+
+    const generatedTitle = await Promise.race([titlePromise, timeoutPromise]);
+
+    const trimmed = (generatedTitle || '').trim();
+    if (trimmed) {
+      app.logger.info({ generatedTitle: trimmed }, 'Title generated from AI');
+      return trimmed;
+    }
+
+    app.logger.warn('AI returned empty title, falling back to message truncation');
+    return truncateToWordBoundary(userMessage, 40);
+  } catch (error) {
+    app.logger.warn({ err: error }, 'Title generation failed, falling back to message truncation');
+    return truncateToWordBoundary(userMessage, 40);
+  }
 }
 
 export function registerChatRoutes(app: App, fastify: FastifyInstance) {
@@ -343,7 +377,7 @@ export function registerChatRoutes(app: App, fastify: FastifyInstance) {
           type: 'object',
           required: ['content'],
           properties: {
-            content: { type: 'string' },
+            content: { type: 'string', minLength: 1 },
           },
         },
         response: {
@@ -397,6 +431,12 @@ export function registerChatRoutes(app: App, fastify: FastifyInstance) {
       const { id: sessionId } = request.params;
       const { content } = request.body;
 
+      // Validate content is not empty
+      if (!content || content.trim().length === 0) {
+        app.logger.warn({ sessionId }, 'Empty message content received');
+        return reply.status(400).send({ error: 'Message content cannot be empty' });
+      }
+
       app.logger.info({ sessionId, userMessage: content }, 'Processing user message');
 
       // Verify session exists
@@ -437,11 +477,25 @@ export function registerChatRoutes(app: App, fastify: FastifyInstance) {
         // Call AI with conversation history
         app.logger.info({ messageCount: contextMessages.length }, 'Calling AI with context');
 
-        const { text: aiResponse } = await generateText({
-          model: gateway('anthropic/claude-sonnet-4-6'),
-          system: SYSTEM_PROMPT,
-          messages: contextMessages,
-        });
+        let aiResponse: string;
+        try {
+          const aiPromise = generateText({
+            model: gateway('anthropic/claude-sonnet-4-6'),
+            system: SYSTEM_PROMPT,
+            messages: contextMessages,
+          });
+
+          const timeoutPromise = new Promise<{ text: string }>((_, reject) =>
+            setTimeout(() => reject(new Error('AI response timeout')), 30000)
+          );
+
+          const result = await Promise.race([aiPromise, timeoutPromise]);
+          aiResponse = result.text;
+        } catch (error) {
+          app.logger.warn({ err: error }, 'AI response generation failed, using fallback response');
+          // Use fallback response when AI service is unavailable
+          aiResponse = `I acknowledge your message regarding accounting and tax matters in South Africa. I am currently unable to provide a detailed response due to service limitations. Please try again in a moment or contact support if this issue persists.`;
+        }
 
         // Insert assistant response
         const [assistantMessage] = await app.db
@@ -455,21 +509,32 @@ export function registerChatRoutes(app: App, fastify: FastifyInstance) {
 
         app.logger.info({ messageId: assistantMessage.id }, 'AI response saved');
 
-        // Get total message count after insert
-        const totalMessages = await app.db
-          .select()
+        // Get count of user messages to detect if this is the first user message
+        const userMessageCount = await app.db
+          .select({ count: sql<number>`count(*)` })
           .from(schema.chatMessages)
-          .where(eq(schema.chatMessages.sessionId, sessionId));
+          .where(and(
+            eq(schema.chatMessages.sessionId, sessionId),
+            eq(schema.chatMessages.role, 'user')
+          ));
 
-        // If this was the first user message (count == 2 after insert: 1 user + 1 assistant), auto-generate title
-        if (totalMessages.length === 2) {
-          const newTitle = truncateToWordBoundary(content, 60);
-          await app.db
-            .update(schema.chatSessions)
-            .set({ title: newTitle, updatedAt: new Date() })
-            .where(eq(schema.chatSessions.id, sessionId));
+        // If this was the first user message, generate an AI-powered title
+        if ((userMessageCount[0]?.count || 0) === 1) {
+          try {
+            const generatedTitle = await generateTitleFromMessage(app, content);
+            await app.db
+              .update(schema.chatSessions)
+              .set({ title: generatedTitle, updatedAt: new Date() })
+              .where(eq(schema.chatSessions.id, sessionId));
 
-          app.logger.info({ sessionId, newTitle }, 'Session title auto-generated');
+            app.logger.info({ sessionId, generatedTitle }, 'Session title generated from first user message');
+          } catch (titleError) {
+            app.logger.warn({ err: titleError }, 'Failed to generate title, updating just the timestamp');
+            await app.db
+              .update(schema.chatSessions)
+              .set({ updatedAt: new Date() })
+              .where(eq(schema.chatSessions.id, sessionId));
+          }
         } else {
           // Update session updated_at
           await app.db

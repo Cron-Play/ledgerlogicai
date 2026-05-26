@@ -2,6 +2,7 @@ import { createApplication } from "@specific-dev/framework";
 import { eq } from 'drizzle-orm';
 import * as schema from './db/schema/schema.js';
 import { registerChatRoutes } from './routes/chat.js';
+import { backfillSessionTitles } from './db/backfill-titles.js';
 
 // Create application with schema for full database type support
 export const app = await createApplication(schema);
@@ -144,5 +145,6 @@ async function seedDatabase() {
 
 // Run application
 await seedDatabase();
+backfillSessionTitles(app); // Fire and forget - runs in background
 await app.run();
 app.logger.info('Application running');
