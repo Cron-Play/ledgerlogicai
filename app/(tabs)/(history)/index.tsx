@@ -21,19 +21,15 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-function formatRelativeTime(dateStr: string): string {
+function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
   const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMins / 60);
-  const diffDays = Math.floor(diffHours / 24);
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterdayStart = new Date(todayStart.getTime() - 86400000);
+  const dateStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return `${diffDays}d ago`;
+  if (dateStart.getTime() === todayStart.getTime()) return 'Today';
+  if (dateStart.getTime() === yesterdayStart.getTime()) return 'Yesterday';
   return date.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
@@ -153,15 +149,12 @@ export default function HistoryScreen() {
 
   const filteredSessions = searchQuery.trim()
     ? sessions.filter((s) =>
-        s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (s.lastMessage ?? '').toLowerCase().includes(searchQuery.toLowerCase())
+        s.title.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : sessions;
 
   const renderItem = useCallback(({ item, index }: { item: ChatSession; index: number }) => {
-    const initial = (item.title ?? 'C').charAt(0).toUpperCase();
-    const timeDisplay = formatRelativeTime(item.updatedAt ?? item.createdAt);
-    const preview = item.lastMessage ?? 'No messages yet';
+    const timeDisplay = formatDate(item.updatedAt ?? item.createdAt);
 
     return (
       <AnimatedListItem index={index}>
@@ -177,57 +170,24 @@ export default function HistoryScreen() {
                 padding: 14,
                 flexDirection: 'row',
                 alignItems: 'center',
-                gap: 12,
+                gap: 0,
                 borderWidth: 1,
                 borderColor: COLORS.border,
                 borderCurve: 'continuous',
               }}
             >
-              <View
+              <Text
                 style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 20,
-                  backgroundColor: COLORS.primaryMuted,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
+                  flex: 1,
+                  fontFamily: 'SpaceGrotesk-SemiBold',
+                  fontSize: 15,
+                  color: COLORS.text,
                 }}
+                numberOfLines={1}
               >
-                <Text
-                  style={{
-                    fontFamily: 'SpaceGrotesk-Bold',
-                    fontSize: 16,
-                    color: COLORS.primary,
-                  }}
-                >
-                  {initial}
-                </Text>
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text
-                  style={{
-                    fontFamily: 'SpaceGrotesk-SemiBold',
-                    fontSize: 14,
-                    color: COLORS.text,
-                    marginBottom: 3,
-                  }}
-                  numberOfLines={1}
-                >
-                  {item.title}
-                </Text>
-                <Text
-                  style={{
-                    fontFamily: 'SpaceGrotesk-Regular',
-                    fontSize: 13,
-                    color: COLORS.textSecondary,
-                  }}
-                  numberOfLines={1}
-                >
-                  {preview}
-                </Text>
-              </View>
-              <View style={{ alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+                {item.title}
+              </Text>
+              <View style={{ alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
                 <Text
                   style={{
                     fontFamily: 'SpaceGrotesk-Regular',
