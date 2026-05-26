@@ -8,7 +8,7 @@ const TABS = [
   {
     name: '(chat)',
     route: '/(tabs)/(chat)' as const,
-    icon: 'chat_bubble_outline' as const,
+    icon: 'chat-bubble-outline' as const,
     label: 'New Chat',
   },
   {

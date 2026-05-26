@@ -86,11 +86,15 @@ export default function FloatingTabBar({
 
   React.useEffect(() => {
     if (activeTabIndex >= 0) {
-      animatedValue.value = withSpring(activeTabIndex, {
-        damping: 20,
-        stiffness: 120,
-        mass: 1,
-      });
+      if (Platform.OS !== 'web') {
+        animatedValue.value = withSpring(activeTabIndex, {
+          damping: 20,
+          stiffness: 120,
+          mass: 1,
+        });
+      } else {
+        animatedValue.value = activeTabIndex;
+      }
     }
   }, [activeTabIndex, animatedValue]);
 
