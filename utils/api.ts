@@ -1,4 +1,4 @@
-const BASE_URL = 'https://sjejmczpu6x623pndtw9m2wu4zvha7bq.app.specular.dev';
+const BASE_URL = 'https://9a46y5tnvmkgmhma6g8bpzhmdehehn3t.app.specular.dev';
 
 export interface ChatSession {
   id: string;
