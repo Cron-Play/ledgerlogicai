@@ -88,6 +88,13 @@ function truncateToWordBoundary(text: string, maxLength: number): string {
   return truncated.trim();
 }
 
+function toTitleCase(text: string): string {
+  return text
+    .split(/\s+/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
 async function generateTitleFromMessage(app: App, userMessage: string): Promise<string> {
   try {
     // Use Promise.race with a timeout to prevent hanging
@@ -113,10 +120,12 @@ async function generateTitleFromMessage(app: App, userMessage: string): Promise<
     }
 
     app.logger.warn('AI returned empty title, falling back to message truncation');
-    return truncateToWordBoundary(userMessage, 40);
+    const fallbackTitle = toTitleCase(truncateToWordBoundary(userMessage, 30));
+    return fallbackTitle;
   } catch (error) {
     app.logger.warn({ err: error }, 'Title generation failed, falling back to message truncation');
-    return truncateToWordBoundary(userMessage, 40);
+    const fallbackTitle = toTitleCase(truncateToWordBoundary(userMessage, 30));
+    return fallbackTitle;
   }
 }
 
@@ -480,7 +489,7 @@ export function registerChatRoutes(app: App, fastify: FastifyInstance) {
         let aiResponse: string;
         try {
           const aiPromise = generateText({
-            model: gateway('anthropic/claude-sonnet-4-6'),
+            model: gateway('openai/gpt-4o-mini'),
             system: SYSTEM_PROMPT,
             messages: contextMessages,
           });

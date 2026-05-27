@@ -168,7 +168,7 @@ describe("API Integration Tests", () => {
     await expectStatus(res, 400);
   });
 
-  test("Send message with empty content string", async () => {
+  test("Send message with empty content string (400)", async () => {
     // Create a temporary session
     const sessionRes = await api("/api/chat/sessions", {
       method: "POST",
@@ -185,7 +185,6 @@ describe("API Integration Tests", () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ content: "" }),
     });
-    // Should either succeed (201) or fail with 400 depending on API validation
-    expect([201, 400]).toContain(res.status);
+    await expectStatus(res, 400);
   });
 });
