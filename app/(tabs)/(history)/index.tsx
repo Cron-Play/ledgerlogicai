@@ -148,13 +148,26 @@ export default function HistoryScreen() {
   }, []);
 
   const filteredSessions = searchQuery.trim()
-    ? sessions.filter((s) =>
-        s.title.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+    ? sessions.filter((s) => {
+        const q = searchQuery.toLowerCase();
+        return (
+          (s.title ?? '').toLowerCase().includes(q) ||
+          (s.lastMessage ?? '').toLowerCase().includes(q)
+        );
+      })
     : sessions;
 
   const renderItem = useCallback(({ item, index }: { item: ChatSession; index: number }) => {
     const timeDisplay = formatDate(item.updatedAt ?? item.createdAt);
+    const trimmedTitle = (item.title ?? '').trim();
+    const trimmedLastMessage = (item.lastMessage ?? '').trim();
+    const displayTitle = trimmedTitle
+      ? trimmedTitle
+      : trimmedLastMessage
+        ? trimmedLastMessage.length > 40
+          ? trimmedLastMessage.slice(0, 40) + '…'
+          : trimmedLastMessage
+        : 'Untitled chat';
 
     return (
       <AnimatedListItem index={index}>
@@ -185,7 +198,7 @@ export default function HistoryScreen() {
                 }}
                 numberOfLines={1}
               >
-                {item.title}
+                {displayTitle}
               </Text>
               <View style={{ alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
                 <Text
