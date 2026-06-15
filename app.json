@@ -4,10 +4,10 @@
     "slug": "ledgerlogicai",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/LedgeLogic App Logo.png",
+    "icon": "./assets/images/ChatGPT Image Jun 15, 2026, 09_11_06 AM.png",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/LedgeLogic App Logo.png",
+      "image": "./assets/images/ChatGPT Image Jun 15, 2026, 09_11_06 AM.png",
       "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
@@ -20,7 +20,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/LedgeLogic App Logo.png",
+        "foregroundImage": "./assets/images/ChatGPT Image Jun 15, 2026, 09_11_06 AM.png",
         "backgroundColor": "#000000"
       },
       "package": "com.placeholder.app"
