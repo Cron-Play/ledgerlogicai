@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -100,6 +101,16 @@ export default function HistoryScreen() {
   useEffect(() => {
     loadSessions();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      console.log('[History] Tab focused — reloading sessions');
+      loadSessions();
+      return () => {
+        console.log('[History] Tab blurred');
+      };
+    }, [loadSessions])
+  );
 
   const loadSessions = useCallback(async () => {
     console.log('[History] Loading sessions');
