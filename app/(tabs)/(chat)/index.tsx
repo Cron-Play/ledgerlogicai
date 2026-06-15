@@ -8,6 +8,7 @@ import {
   Animated,
   ActivityIndicator,
   Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -162,7 +163,11 @@ export default function NewChatScreen() {
   const canSend = inputText.trim().length > 0 && !creating;
 
   return (
-    <View style={{ flex: 1, backgroundColor: COLORS.background }}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1, backgroundColor: COLORS.background }}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+    >
       <ScrollView
         contentContainerStyle={{
           paddingTop: insets.top + 24,
@@ -171,6 +176,7 @@ export default function NewChatScreen() {
         }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
       >
         {/* Header */}
         <Animated.View
@@ -439,12 +445,8 @@ export default function NewChatScreen() {
       {/* Input Bar */}
       <View
         style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
           paddingHorizontal: 16,
-          paddingBottom: insets.bottom + 80,
+          paddingBottom: insets.bottom + 16,
           paddingTop: 12,
           backgroundColor: COLORS.background,
           borderTopWidth: 1,
@@ -508,6 +510,6 @@ export default function NewChatScreen() {
           </AnimatedPressable>
         </View>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
