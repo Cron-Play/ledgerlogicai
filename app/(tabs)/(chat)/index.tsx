@@ -24,6 +24,7 @@ import {
 import { COLORS } from '@/constants/FinLexColors';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import { getSessions, createSession, ChatSession } from '@/utils/api';
+import { AdBanner } from '@/components/AdBanner';
 
 const QUICK_START_CARDS = [
   {
@@ -441,6 +442,9 @@ export default function NewChatScreen() {
           </View>
         )}
       </ScrollView>
+
+      {/* Ad Banner (Android only) */}
+      {Platform.OS === 'android' && <AdBanner />}
 
       {/* Input Bar */}
       <View
